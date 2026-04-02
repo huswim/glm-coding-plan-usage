@@ -1,0 +1,63 @@
+export interface ApiState<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  lastUpdated: Date | null;
+}
+
+// model-usage response
+export interface ModelTotalUsage {
+  totalModelCallCount: number;
+  totalTokensUsage: number;
+}
+export interface ModelUsageData {
+  x_time: string[];
+  modelCallCount: (number | null)[];
+  tokensUsage: (number | null)[];
+  totalUsage: ModelTotalUsage;
+}
+
+// tool-usage response
+export interface ToolTotalUsage {
+  totalNetworkSearchCount: number;
+  totalWebReadMcpCount: number;
+  totalZreadMcpCount: number;
+  totalSearchMcpCount: number;
+  toolDetails: unknown[];
+}
+export interface ToolUsageData {
+  x_time: string[];
+  networkSearchCount: (number | null)[];
+  webReadMcpCount: (number | null)[];
+  zreadMcpCount: (number | null)[];
+  totalUsage: ToolTotalUsage;
+}
+
+// quota/limit response
+export interface QuotaLimitItem {
+  type: string;
+  unit: number;
+  number: number;
+  usage?: number;
+  currentValue?: number;
+  remaining?: number;
+  percentage: number;
+  nextResetTime?: number;
+  usageDetails?: { modelCode: string; usage: number }[];
+}
+export interface QuotaLimitData {
+  limits: QuotaLimitItem[];
+  level: string;
+}
+
+export interface DashboardData {
+  modelUsage: ApiState<ModelUsageData>;
+  toolUsage: ApiState<ToolUsageData>;
+  quotaLimit: ApiState<QuotaLimitData>;
+}
+
+export interface AppConfig {
+  apiKey: string;
+  pollIntervalMs: number;
+  daysBack: number;
+}
