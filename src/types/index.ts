@@ -50,10 +50,20 @@ export interface QuotaLimitData {
   level: string;
 }
 
+// Claude usage response
+export interface ClaudeUsageData {
+  planName: string | null;
+  fiveHour: number | null;      // 0-100 %
+  sevenDay: number | null;      // 0-100 %
+  fiveHourResetAt: Date | null;
+  sevenDayResetAt: Date | null;
+}
+
 export interface DashboardData {
   modelUsage: ApiState<ModelUsageData>;
   toolUsage: ApiState<ToolUsageData>;
   quotaLimit: ApiState<QuotaLimitData>;
+  claudeUsage: ApiState<ClaudeUsageData>;
 }
 
 export interface AppConfig {

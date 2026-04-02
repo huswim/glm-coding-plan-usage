@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Box, useInput, useApp } from 'ink';
 import { createZaiClient } from '../api/zai.js';
+import { getClaudeAccessToken, fetchClaudeUsage } from '../api/claude.js';
 import { Header } from './Header.js';
 import { ModelUsagePanel } from './ModelUsage.js';
 import { ToolUsagePanel } from './ToolUsage.js';
 import { QuotaLimitPanel } from './QuotaLimit.js';
+import { ClaudeUsagePanel } from './ClaudeUsage.js';
 import { StatusBar } from './StatusBar.js';
 import type { AppConfig, DashboardData, ApiState } from '../types/index.js';
 
@@ -24,6 +26,7 @@ export function App({ config }: AppProps) {
     modelUsage: initialState(),
     toolUsage: initialState(),
     quotaLimit: initialState(),
+    claudeUsage: initialState(),
   });
 
   const fetchAll = useCallback(async () => {
@@ -31,12 +34,19 @@ export function App({ config }: AppProps) {
       modelUsage: { ...prev.modelUsage, loading: true, error: null },
       toolUsage: { ...prev.toolUsage, loading: true, error: null },
       quotaLimit: { ...prev.quotaLimit, loading: true, error: null },
+      claudeUsage: { ...prev.claudeUsage, loading: true, error: null },
     }));
 
-    const [modelResult, toolResult, quotaResult] = await Promise.allSettled([
+    const claudeToken = getClaudeAccessToken();
+    const claudePromise = claudeToken
+      ? fetchClaudeUsage(claudeToken)
+      : Promise.reject(new Error('No token — set CLAUDE_ACCESS_TOKEN env var'));
+
+    const [modelResult, toolResult, quotaResult, claudeResult] = await Promise.allSettled([
       client.fetchModelUsage(config.daysBack),
       client.fetchToolUsage(config.daysBack),
       client.fetchQuotaLimit(),
+      claudePromise,
     ]);
 
     const now = new Date();
@@ -54,6 +64,10 @@ export function App({ config }: AppProps) {
         quotaResult.status === 'fulfilled'
           ? { data: quotaResult.value, loading: false, error: null, lastUpdated: now }
           : { data: null, loading: false, error: (quotaResult.reason as Error).message, lastUpdated: now },
+      claudeUsage:
+        claudeResult.status === 'fulfilled'
+          ? { data: claudeResult.value, loading: false, error: null, lastUpdated: now }
+          : { data: null, loading: false, error: (claudeResult.reason as Error).message, lastUpdated: now },
     });
   }, [client, config.daysBack]);
 
@@ -73,6 +87,7 @@ export function App({ config }: AppProps) {
       <Header pollIntervalMs={config.pollIntervalMs} daysBack={config.daysBack} />
       <Box flexDirection="row" marginTop={1} gap={2}>
         <Box flexDirection="column" flexGrow={1}>
+          <ClaudeUsagePanel state={dashboard.claudeUsage} />
           <QuotaLimitPanel state={dashboard.quotaLimit} />
         </Box>
         <Box flexDirection="column" flexGrow={1}>
