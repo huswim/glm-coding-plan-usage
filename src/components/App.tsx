@@ -22,6 +22,8 @@ export function App({ config }: AppProps) {
   const { exit } = useApp();
   const client = useMemo(() => createZaiClient(config.apiKey), [config.apiKey]);
 
+  const [showDetails, setShowDetails] = useState(false);
+
   const [dashboard, setDashboard] = useState<DashboardData>({
     modelUsage: initialState(),
     toolUsage: initialState(),
@@ -80,20 +82,31 @@ export function App({ config }: AppProps) {
   useInput((input, key) => {
     if (input === 'q' || key.escape) exit();
     if (input === 'r') fetchAll();
+    if (input === 'd') setShowDetails(v => !v);
   });
 
   return (
     <Box flexDirection="column" padding={1}>
-      <Header pollIntervalMs={config.pollIntervalMs} daysBack={config.daysBack} />
-      <Box flexDirection="row" marginTop={1} gap={2}>
-        <Box flexDirection="column" flexGrow={1}>
-          <ClaudeUsagePanel state={dashboard.claudeUsage} />
-          <QuotaLimitPanel state={dashboard.quotaLimit} />
+      <Header pollIntervalMs={config.pollIntervalMs} daysBack={config.daysBack} showDetails={showDetails} />
+      <Box flexDirection="column" marginTop={1}>
+        <Box flexDirection="row" gap={2}>
+          <Box flexDirection="column" flexGrow={1}>
+            <ClaudeUsagePanel state={dashboard.claudeUsage} />
+          </Box>
+          <Box flexDirection="column" flexGrow={1}>
+            <QuotaLimitPanel state={dashboard.quotaLimit} />
+          </Box>
         </Box>
-        <Box flexDirection="column" flexGrow={1}>
-          <ModelUsagePanel state={dashboard.modelUsage} daysBack={config.daysBack} />
-          <ToolUsagePanel state={dashboard.toolUsage} daysBack={config.daysBack} />
-        </Box>
+        {showDetails && (
+          <Box flexDirection="row" gap={2}>
+            <Box flexDirection="column" flexGrow={1}>
+              <ModelUsagePanel state={dashboard.modelUsage} daysBack={config.daysBack} />
+            </Box>
+            <Box flexDirection="column" flexGrow={1}>
+              <ToolUsagePanel state={dashboard.toolUsage} daysBack={config.daysBack} />
+            </Box>
+          </Box>
+        )}
       </Box>
       <StatusBar dashboard={dashboard} />
     </Box>

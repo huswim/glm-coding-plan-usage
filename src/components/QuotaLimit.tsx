@@ -63,8 +63,8 @@ function LimitRow({ item }: { item: QuotaLimitItem }) {
 export function QuotaLimitPanel({ state }: QuotaLimitProps) {
   return (
     <Box flexDirection="column" borderStyle="single" borderColor="magenta" paddingX={1} marginBottom={1}>
-      <Text bold color="magenta">Quota / Limits
-        {state.data && <Text dimColor>  plan: {state.data.level}</Text>}
+      <Text bold color="magenta">GLM Coding Plan
+        {state.data && <Text dimColor> {state.data.level}</Text>}
       </Text>
       <Box marginTop={1} flexDirection="column">
         {state.loading && (
