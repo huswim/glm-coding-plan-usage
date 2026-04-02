@@ -73,11 +73,11 @@ export function App({ config }: AppProps) {
       <Header pollIntervalMs={config.pollIntervalMs} daysBack={config.daysBack} />
       <Box flexDirection="row" marginTop={1} gap={2}>
         <Box flexDirection="column" flexGrow={1}>
+          <QuotaLimitPanel state={dashboard.quotaLimit} />
+        </Box>
+        <Box flexDirection="column" flexGrow={1}>
           <ModelUsagePanel state={dashboard.modelUsage} daysBack={config.daysBack} />
           <ToolUsagePanel state={dashboard.toolUsage} daysBack={config.daysBack} />
-        </Box>
-        <Box flexDirection="column" minWidth={32}>
-          <QuotaLimitPanel state={dashboard.quotaLimit} />
         </Box>
       </Box>
       <StatusBar dashboard={dashboard} />
