@@ -60,6 +60,47 @@ src/
 
 > **Note:** `model-usage` and `tool-usage` require `startTime`/`endTime` in `yyyy-MM-dd HH:mm:ss` format.
 
+## Docker
+
+### Pull and run from GitHub Container Registry
+
+```bash
+docker run -it --rm \
+  -e ZAI_API_KEY=your_api_key_here \
+  ghcr.io/huswim/glm-coding-plan-usage:main
+```
+
+Optional env overrides:
+
+```bash
+docker run -it --rm \
+  -e ZAI_API_KEY=your_api_key_here \
+  -e POLL_INTERVAL_MS=60000 \
+  -e DAYS_BACK=14 \
+  ghcr.io/huswim/glm-coding-plan-usage:main
+```
+
+> `-it` is required — the dashboard is an interactive terminal UI.
+
+### Build locally
+
+```bash
+docker build -t glm-coding-plan-usage .
+docker run -it --rm -e ZAI_API_KEY=your_api_key_here glm-coding-plan-usage
+```
+
+### CI/CD
+
+GitHub Actions automatically builds and publishes to `ghcr.io` on every push to `main` and on version tags (`v*`). See [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml).
+
+**Image tags produced:**
+
+| Event | Tag |
+|---|---|
+| Push to `main` | `main` |
+| Tag `v1.2.3` | `1.2.3`, `1.2` |
+| Any push | `sha-<short>` |
+
 ## Scripts
 
 ```bash
