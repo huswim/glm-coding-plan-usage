@@ -4,6 +4,7 @@ import { createZaiClient } from '../api/zai.js';
 import { getClaudeAccessToken, fetchClaudeUsage } from '../api/claude.js';
 import { fetchAntigravityUsage } from '../api/antigravity.js';
 import { getCopilotToken, fetchCopilotUsage } from '../api/copilot.js';
+import { getGeminiToken, fetchGeminiUsage } from '../api/gemini.js';
 import { Header } from './Header.js';
 import { ModelUsagePanel } from './ModelUsage.js';
 import { ToolUsagePanel } from './ToolUsage.js';
@@ -11,6 +12,7 @@ import { QuotaLimitPanel } from './QuotaLimit.js';
 import { ClaudeUsagePanel } from './ClaudeUsage.js';
 import { AntigravityUsagePanel } from './AntigravityUsage.js';
 import { CopilotUsagePanel } from './CopilotUsage.js';
+import { GeminiUsagePanel } from './GeminiUsage.js';
 import { StatusBar } from './StatusBar.js';
 import type { AppConfig, DashboardData, ApiState } from '../types/index.js';
 
@@ -35,6 +37,7 @@ export function App({ config }: AppProps) {
     claudeUsage: initialState(),
     antigravityUsage: initialState(),
     copilotUsage: initialState(),
+    geminiUsage: initialState(),
   });
 
   const fetchAll = useCallback(async () => {
@@ -45,6 +48,7 @@ export function App({ config }: AppProps) {
       claudeUsage: { ...prev.claudeUsage, loading: true, error: null },
       antigravityUsage: { ...prev.antigravityUsage, loading: true, error: null },
       copilotUsage: { ...prev.copilotUsage, loading: true, error: null },
+      geminiUsage: { ...prev.geminiUsage, loading: true, error: null },
     }));
 
     const claudeToken = getClaudeAccessToken();
@@ -57,13 +61,19 @@ export function App({ config }: AppProps) {
       ? fetchCopilotUsage(copilotToken)
       : Promise.reject(new Error('No token — set GITHUB_COPILOT_TOKEN or use gh/opencode auth'));
 
-    const [modelResult, toolResult, quotaResult, claudeResult, antigravityResult, copilotResult] = await Promise.allSettled([
+    const geminiToken = getGeminiToken();
+    const geminiPromise = geminiToken
+      ? fetchGeminiUsage(geminiToken)
+      : Promise.reject(new Error('No token — set GEMINI_OAUTH_TOKEN or install Gemini CLI'));
+
+    const [modelResult, toolResult, quotaResult, claudeResult, antigravityResult, copilotResult, geminiResult] = await Promise.allSettled([
       client.fetchModelUsage(config.daysBack),
       client.fetchToolUsage(config.daysBack),
       client.fetchQuotaLimit(),
       claudePromise,
       fetchAntigravityUsage(),
       copilotPromise,
+      geminiPromise,
     ]);
 
     const now = new Date();
@@ -93,6 +103,10 @@ export function App({ config }: AppProps) {
         copilotResult.status === 'fulfilled'
           ? { data: copilotResult.value, loading: false, error: null, lastUpdated: now }
           : { data: null, loading: false, error: (copilotResult.reason as Error).message, lastUpdated: now },
+      geminiUsage:
+        geminiResult.status === 'fulfilled'
+          ? { data: geminiResult.value, loading: false, error: null, lastUpdated: now }
+          : { data: null, loading: false, error: (geminiResult.reason as Error).message, lastUpdated: now },
     });
   }, [client, config.daysBack]);
 
@@ -124,6 +138,9 @@ export function App({ config }: AppProps) {
           </Box>
           <Box flexDirection="column" flexGrow={1}>
             <CopilotUsagePanel state={dashboard.copilotUsage} />
+          </Box>
+          <Box flexDirection="column" flexGrow={1}>
+            <GeminiUsagePanel state={dashboard.geminiUsage} />
           </Box>
         </Box>
         {showDetails && (

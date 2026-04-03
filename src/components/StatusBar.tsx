@@ -12,7 +12,7 @@ function formatTime(d: Date | null): string {
 }
 
 export function StatusBar({ dashboard }: StatusBarProps) {
-  const panels = [dashboard.modelUsage, dashboard.toolUsage, dashboard.quotaLimit, dashboard.claudeUsage, dashboard.antigravityUsage, dashboard.copilotUsage];
+  const panels = [dashboard.modelUsage, dashboard.toolUsage, dashboard.quotaLimit, dashboard.claudeUsage, dashboard.antigravityUsage, dashboard.copilotUsage, dashboard.geminiUsage];
   const anyLoading = panels.some(p => p.loading);
   const anyError = panels.some(p => p.error !== null);
   const timestamps = panels.map(p => p.lastUpdated).filter((d): d is Date => d !== null);

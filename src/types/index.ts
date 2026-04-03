@@ -59,6 +59,21 @@ export interface ClaudeUsageData {
   sevenDayResetAt: Date | null;
 }
 
+// Gemini CLI usage (cloudcode-pa quota API)
+export interface GeminiModelQuota {
+  modelId: string;
+  remainingAmount: string | null;  // raw string from API (e.g. "1000")
+  remainingFraction: number;       // 0-1 fraction
+  tokenType: string | null;
+  resetTime: string | null;
+}
+
+export interface GeminiUsageData {
+  authType: 'oauth' | 'api-key' | 'none';
+  pooledResetTime: string | null;
+  models: GeminiModelQuota[];
+}
+
 // GitHub Copilot usage (copilot_internal API)
 export interface CopilotUsageData {
   entitlement: number;
@@ -94,6 +109,7 @@ export interface DashboardData {
   claudeUsage: ApiState<ClaudeUsageData>;
   antigravityUsage: ApiState<AntigravityData>;
   copilotUsage: ApiState<CopilotUsageData>;
+  geminiUsage: ApiState<GeminiUsageData>;
 }
 
 export interface AppConfig {
