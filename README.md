@@ -71,13 +71,7 @@ src/
 │   ├── claude.ts          # Claude usage API client
 │   ├── copilot.ts         # GitHub Copilot quota client
 │   ├── gemini.ts          # Gemini CLI quota client (cloudcode-pa API)
-│   ├── antigravity.ts     # Antigravity orchestrator (process → port → RPC)
-│   └── antigravity/
-│       ├── process-detector.ts  # Detect Antigravity LSP process (ps aux / wmic)
-│       ├── port-detective.ts    # Discover listening ports for a pid
-│       ├── port-prober.ts       # Probe ports for Connect RPC endpoint
-│       ├── connect-client.ts    # HTTPS Connect RPC client (GetUserStatus)
-│       └── local-parser.ts      # Parse RPC response → QuotaSnapshot
+│   └── antigravity.ts     # Antigravity client (process → port → RPC)
 ├── types/index.ts         # TypeScript interfaces
 ├── utils/flatten.ts       # Data flattening utilities
 └── components/

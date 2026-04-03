@@ -17,7 +17,7 @@ pnpm start      # node dist/index.js
 - **Entry**: `src/index.tsx` — loads `.env`, validates `ZAI_API_KEY`, renders `<App>`
 - **z.ai client**: `src/api/zai.ts` — `createZaiClient(apiKey)` factory; `model-usage` and `tool-usage` require `startTime`/`endTime` in `yyyy-MM-dd HH:mm:ss` format
 - **Claude client**: `src/api/claude.ts` — `getClaudeAccessToken()` (env var → macOS Keychain → null) + `fetchClaudeUsage(token)`
-- **Antigravity client**: `src/api/antigravity.ts` — orchestrator; `src/api/antigravity/` contains process-detector, port-detective, port-prober, connect-client, local-parser
+- **Antigravity client**: `src/api/antigravity.ts` — standalone client and parser
 - **Copilot client**: `src/api/copilot.ts` — `getCopilotToken()` (env var → opencode auth.json → `gh auth token` → null) + `fetchCopilotUsage(token)`; exchanges token via `copilot_internal/v2/token`, then fetches quota from `copilot_internal/user`
 - **Gemini client**: `src/api/gemini.ts` — `getGeminiToken()` (env var → macOS Keychain `gemini-cli-oauth` → `~/.gemini/oauth_creds.json` → null) + `fetchGeminiUsage(token)`; calls `loadCodeAssist` to resolve project ID, then `retrieveUserQuota` for per-model `BucketInfo[]`; expired tokens refreshed via OAuth if `GEMINI_OAUTH_CLIENT_ID`/`GEMINI_OAUTH_CLIENT_SECRET` are set
 - **State/polling**: `src/components/App.tsx` — owns all `ApiState<T>`, `Promise.allSettled` for independent panel failures, `setInterval` for polling
