@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Box, useInput, useApp } from 'ink';
 import { createZaiClient } from '../api/zai.js';
 import { getClaudeAccessToken, fetchClaudeUsage } from '../api/claude.js';
+import { fetchAntigravityUsage } from '../api/antigravity.js';
 import { Header } from './Header.js';
 import { ModelUsagePanel } from './ModelUsage.js';
 import { ToolUsagePanel } from './ToolUsage.js';
 import { QuotaLimitPanel } from './QuotaLimit.js';
 import { ClaudeUsagePanel } from './ClaudeUsage.js';
+import { AntigravityUsagePanel } from './AntigravityUsage.js';
 import { StatusBar } from './StatusBar.js';
 import type { AppConfig, DashboardData, ApiState } from '../types/index.js';
 
@@ -29,6 +31,7 @@ export function App({ config }: AppProps) {
     toolUsage: initialState(),
     quotaLimit: initialState(),
     claudeUsage: initialState(),
+    antigravityUsage: initialState(),
   });
 
   const fetchAll = useCallback(async () => {
@@ -37,6 +40,7 @@ export function App({ config }: AppProps) {
       toolUsage: { ...prev.toolUsage, loading: true, error: null },
       quotaLimit: { ...prev.quotaLimit, loading: true, error: null },
       claudeUsage: { ...prev.claudeUsage, loading: true, error: null },
+      antigravityUsage: { ...prev.antigravityUsage, loading: true, error: null },
     }));
 
     const claudeToken = getClaudeAccessToken();
@@ -44,11 +48,12 @@ export function App({ config }: AppProps) {
       ? fetchClaudeUsage(claudeToken)
       : Promise.reject(new Error('No token — set CLAUDE_ACCESS_TOKEN env var'));
 
-    const [modelResult, toolResult, quotaResult, claudeResult] = await Promise.allSettled([
+    const [modelResult, toolResult, quotaResult, claudeResult, antigravityResult] = await Promise.allSettled([
       client.fetchModelUsage(config.daysBack),
       client.fetchToolUsage(config.daysBack),
       client.fetchQuotaLimit(),
       claudePromise,
+      fetchAntigravityUsage(),
     ]);
 
     const now = new Date();
@@ -70,6 +75,10 @@ export function App({ config }: AppProps) {
         claudeResult.status === 'fulfilled'
           ? { data: claudeResult.value, loading: false, error: null, lastUpdated: now }
           : { data: null, loading: false, error: (claudeResult.reason as Error).message, lastUpdated: now },
+      antigravityUsage:
+        antigravityResult.status === 'fulfilled'
+          ? { data: antigravityResult.value, loading: false, error: null, lastUpdated: now }
+          : { data: null, loading: false, error: (antigravityResult.reason as Error).message, lastUpdated: now },
     });
   }, [client, config.daysBack]);
 
@@ -92,6 +101,9 @@ export function App({ config }: AppProps) {
         <Box flexDirection="row" gap={2}>
           <Box flexDirection="column" flexGrow={1}>
             <ClaudeUsagePanel state={dashboard.claudeUsage} />
+          </Box>
+          <Box flexDirection="column" flexGrow={1}>
+            <AntigravityUsagePanel state={dashboard.antigravityUsage} />
           </Box>
           <Box flexDirection="column" flexGrow={1}>
             <QuotaLimitPanel state={dashboard.quotaLimit} />

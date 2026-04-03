@@ -1,11 +1,12 @@
 # glm-coding-plan-usage
 
-Terminal dashboard for monitoring [z.ai](https://z.ai) GLM API usage and Claude usage in real time.
+Terminal dashboard for monitoring [z.ai](https://z.ai) GLM API usage, Claude usage, and Antigravity AI usage in real time.
 
 ## Features
 
 - **GLM Coding Plan** — quota limits with progress bars and reset times
 - **Claude Usage** — 5-hour and 7-day utilization from Anthropic's API
+- **Antigravity Usage** — model quota bars read from the local Antigravity language server via Connect RPC
 - **Model & Tool Usage** — hidden by default, toggle with `[d]`
 - Auto-refresh (default every 30s), configurable time window
 - Each panel fails independently — one error doesn't block the others
@@ -39,10 +40,10 @@ pnpm dev
 ## Layout
 
 ```
-┌── Claude Usage ────────┐  ┌── GLM Coding Plan ──────┐
-│  5h  ████░  45%       │  │  Per 5 min  Calls       │
-│  7d  ██░░░  20%       │  │  Monthly    Tokens       │
-└────────────────────────┘  └─────────────────────────┘
+┌── Claude Usage ────────┐  ┌── Antigravity ──────────┐  ┌── GLM Coding Plan ──────┐
+│  5h  ████░  45%       │  │  Gemini Pro  ████░ 80%  │  │  Per 5 min  Calls       │
+│  7d  ██░░░  20%       │  │  Claude Opus ████░ 80%  │  │  Monthly    Tokens       │
+└────────────────────────┘  └────────────────────────┘  └─────────────────────────┘
 # press [d] to show:
 ┌── Model Usage ─────────┐  ┌── Tool Usage ───────────┐
 │  Total Calls  574      │  │  Network Search  0      │
@@ -57,13 +58,21 @@ src/
 ├── index.tsx              # Entry point
 ├── api/
 │   ├── zai.ts             # z.ai API client
-│   └── claude.ts          # Claude usage API client
+│   ├── claude.ts          # Claude usage API client
+│   ├── antigravity.ts     # Antigravity orchestrator (process → port → RPC)
+│   └── antigravity/
+│       ├── process-detector.ts  # Detect Antigravity LSP process (ps aux / wmic)
+│       ├── port-detective.ts    # Discover listening ports for a pid
+│       ├── port-prober.ts       # Probe ports for Connect RPC endpoint
+│       ├── connect-client.ts    # HTTPS Connect RPC client (GetUserStatus)
+│       └── local-parser.ts      # Parse RPC response → QuotaSnapshot
 ├── types/index.ts         # TypeScript interfaces
 ├── utils/flatten.ts       # Data flattening utilities
 └── components/
     ├── App.tsx            # Root: state, polling, keyboard
     ├── Header.tsx         # Title bar with keybinding hints
     ├── ClaudeUsage.tsx    # Claude 5h/7d utilization
+    ├── AntigravityUsage.tsx  # Antigravity model quota bars
     ├── QuotaLimit.tsx     # GLM Coding Plan quota
     ├── ModelUsage.tsx     # Model calls + token totals (hidden by default)
     ├── ToolUsage.tsx      # Tool call breakdowns (hidden by default)
@@ -78,8 +87,11 @@ src/
 | Model Usage | `GET https://api.z.ai/api/monitor/usage/model-usage?startTime=...&endTime=...` |
 | Tool Usage | `GET https://api.z.ai/api/monitor/usage/tool-usage?startTime=...&endTime=...` |
 | Claude Usage | `GET https://api.anthropic.com/api/oauth/usage` |
+| Antigravity | `POST https://127.0.0.1:<port>/exa.language_server_pb.LanguageServerService/GetUserStatus` (local) |
 
 > **Note:** `model-usage` and `tool-usage` require `startTime`/`endTime` in `yyyy-MM-dd HH:mm:ss` format.
+>
+> **Antigravity:** Reads from the locally running Antigravity language server process. Detects port and CSRF token automatically from the process command line. Requires Antigravity to be running. Google One AI plan users: prompt credits are not shown (the `GetUserStatus` endpoint does not expose Google One credit balance — only per-model quota fractions are reliable).
 
 ## Docker
 

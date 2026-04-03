@@ -59,11 +59,32 @@ export interface ClaudeUsageData {
   sevenDayResetAt: Date | null;
 }
 
+// Antigravity usage (local Connect API)
+export interface AntigravityModelInfo {
+  label: string;
+  remainingPercentage?: number;
+  isExhausted: boolean;
+  resetTime?: string;
+  isAutocompleteOnly?: boolean;
+}
+
+export interface AntigravityData {
+  email?: string;
+  promptCredits?: {
+    available: number;
+    monthly: number;
+    usedPercentage: number;
+    remainingPercentage: number;
+  };
+  models: AntigravityModelInfo[];
+}
+
 export interface DashboardData {
   modelUsage: ApiState<ModelUsageData>;
   toolUsage: ApiState<ToolUsageData>;
   quotaLimit: ApiState<QuotaLimitData>;
   claudeUsage: ApiState<ClaudeUsageData>;
+  antigravityUsage: ApiState<AntigravityData>;
 }
 
 export interface AppConfig {
