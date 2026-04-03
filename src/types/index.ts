@@ -59,6 +59,14 @@ export interface ClaudeUsageData {
   sevenDayResetAt: Date | null;
 }
 
+// GitHub Copilot usage (copilot_internal API)
+export interface CopilotUsageData {
+  entitlement: number;
+  remaining: number;
+  unlimited: boolean;
+  resetDate: Date | null;
+}
+
 // Antigravity usage (local Connect API)
 export interface AntigravityModelInfo {
   label: string;
@@ -85,6 +93,7 @@ export interface DashboardData {
   quotaLimit: ApiState<QuotaLimitData>;
   claudeUsage: ApiState<ClaudeUsageData>;
   antigravityUsage: ApiState<AntigravityData>;
+  copilotUsage: ApiState<CopilotUsageData>;
 }
 
 export interface AppConfig {
