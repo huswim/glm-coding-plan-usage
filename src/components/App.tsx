@@ -3,12 +3,14 @@ import { Box, useInput, useApp } from 'ink';
 import { createZaiClient } from '../api/zai.js';
 import { getClaudeAccessToken, fetchClaudeUsage } from '../api/claude.js';
 import { fetchAntigravityUsage } from '../api/antigravity.js';
+import { getCopilotToken, fetchCopilotUsage } from '../api/copilot.js';
 import { Header } from './Header.js';
 import { ModelUsagePanel } from './ModelUsage.js';
 import { ToolUsagePanel } from './ToolUsage.js';
 import { QuotaLimitPanel } from './QuotaLimit.js';
 import { ClaudeUsagePanel } from './ClaudeUsage.js';
 import { AntigravityUsagePanel } from './AntigravityUsage.js';
+import { CopilotUsagePanel } from './CopilotUsage.js';
 import { StatusBar } from './StatusBar.js';
 import type { AppConfig, DashboardData, ApiState } from '../types/index.js';
 
@@ -32,6 +34,7 @@ export function App({ config }: AppProps) {
     quotaLimit: initialState(),
     claudeUsage: initialState(),
     antigravityUsage: initialState(),
+    copilotUsage: initialState(),
   });
 
   const fetchAll = useCallback(async () => {
@@ -41,6 +44,7 @@ export function App({ config }: AppProps) {
       quotaLimit: { ...prev.quotaLimit, loading: true, error: null },
       claudeUsage: { ...prev.claudeUsage, loading: true, error: null },
       antigravityUsage: { ...prev.antigravityUsage, loading: true, error: null },
+      copilotUsage: { ...prev.copilotUsage, loading: true, error: null },
     }));
 
     const claudeToken = getClaudeAccessToken();
@@ -48,12 +52,18 @@ export function App({ config }: AppProps) {
       ? fetchClaudeUsage(claudeToken)
       : Promise.reject(new Error('No token — set CLAUDE_ACCESS_TOKEN env var'));
 
-    const [modelResult, toolResult, quotaResult, claudeResult, antigravityResult] = await Promise.allSettled([
+    const copilotToken = getCopilotToken();
+    const copilotPromise = copilotToken
+      ? fetchCopilotUsage(copilotToken)
+      : Promise.reject(new Error('No token — set GITHUB_COPILOT_TOKEN or use gh/opencode auth'));
+
+    const [modelResult, toolResult, quotaResult, claudeResult, antigravityResult, copilotResult] = await Promise.allSettled([
       client.fetchModelUsage(config.daysBack),
       client.fetchToolUsage(config.daysBack),
       client.fetchQuotaLimit(),
       claudePromise,
       fetchAntigravityUsage(),
+      copilotPromise,
     ]);
 
     const now = new Date();
@@ -79,6 +89,10 @@ export function App({ config }: AppProps) {
         antigravityResult.status === 'fulfilled'
           ? { data: antigravityResult.value, loading: false, error: null, lastUpdated: now }
           : { data: null, loading: false, error: (antigravityResult.reason as Error).message, lastUpdated: now },
+      copilotUsage:
+        copilotResult.status === 'fulfilled'
+          ? { data: copilotResult.value, loading: false, error: null, lastUpdated: now }
+          : { data: null, loading: false, error: (copilotResult.reason as Error).message, lastUpdated: now },
     });
   }, [client, config.daysBack]);
 
@@ -107,6 +121,9 @@ export function App({ config }: AppProps) {
           </Box>
           <Box flexDirection="column" flexGrow={1}>
             <QuotaLimitPanel state={dashboard.quotaLimit} />
+          </Box>
+          <Box flexDirection="column" flexGrow={1}>
+            <CopilotUsagePanel state={dashboard.copilotUsage} />
           </Box>
         </Box>
         {showDetails && (
