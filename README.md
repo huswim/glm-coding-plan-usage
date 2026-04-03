@@ -1,12 +1,14 @@
 # glm-coding-plan-usage
 
-Terminal dashboard for monitoring [z.ai](https://z.ai) GLM API usage, Claude usage, and Antigravity AI usage in real time.
+Terminal dashboard for monitoring [z.ai](https://z.ai) GLM API usage, Claude usage, GitHub Copilot usage, and Antigravity AI usage in real time.
 
 ## Features
 
 - **GLM Coding Plan** — quota limits with progress bars and reset times
 - **Claude Usage** — 5-hour and 7-day utilization from Anthropic's API
+- **GitHub Copilot Usage** — premium request quota from GitHub's internal API
 - **Antigravity Usage** — model quota bars read from the local Antigravity language server via Connect RPC
+- **GitHub Copilot Usage** — premium request quota with entitlement tracking, usage progress, and reset date
 - **Model & Tool Usage** — hidden by default, toggle with `[d]`
 - Auto-refresh (default every 30s), configurable time window
 - Each panel fails independently — one error doesn't block the others
@@ -28,6 +30,7 @@ pnpm dev
 | `POLL_INTERVAL_MS` | `30000` | Refresh interval in milliseconds |
 | `DAYS_BACK` | `7` | Time window for usage queries (days) |
 | `CLAUDE_ACCESS_TOKEN` | — | Claude OAuth token (macOS: auto-read from Keychain if unset) |
+| `GITHUB_COPILOT_TOKEN` | — | GitHub token (auto-detected from opencode auth.json or `gh` CLI if unset) |
 
 ## Keyboard Shortcuts
 
@@ -109,6 +112,15 @@ With Claude usage monitoring:
 docker run -it --rm \
   -e ZAI_API_KEY=your_api_key_here \
   -e CLAUDE_ACCESS_TOKEN=your_claude_token \
+  ghcr.io/huswim/glm-coding-plan-usage:main
+```
+
+With Copilot usage monitoring:
+
+```bash
+docker run -it --rm \
+  -e ZAI_API_KEY=your_api_key_here \
+  -e GITHUB_COPILOT_TOKEN=your_github_token \
   ghcr.io/huswim/glm-coding-plan-usage:main
 ```
 
