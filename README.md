@@ -1,11 +1,12 @@
 # glm-coding-plan-usage
 
-Terminal dashboard for monitoring [z.ai](https://z.ai) GLM API usage in real time.
+Terminal dashboard for monitoring [z.ai](https://z.ai) GLM API usage and Claude usage in real time.
 
 ## Features
 
-- Live polling of model usage, tool usage, and quota/limit from the z.ai monitor API
-- Progress bars for quota consumption
+- **GLM Coding Plan** — quota limits with progress bars and reset times
+- **Claude Usage** — 5-hour and 7-day utilization from Anthropic's API
+- **Model & Tool Usage** — hidden by default, toggle with `[d]`
 - Auto-refresh (default every 30s), configurable time window
 - Each panel fails independently — one error doesn't block the others
 
@@ -25,28 +26,47 @@ pnpm dev
 | `ZAI_API_KEY` | required | Your z.ai API key |
 | `POLL_INTERVAL_MS` | `30000` | Refresh interval in milliseconds |
 | `DAYS_BACK` | `7` | Time window for usage queries (days) |
+| `CLAUDE_ACCESS_TOKEN` | — | Claude OAuth token (macOS: auto-read from Keychain if unset) |
 
 ## Keyboard Shortcuts
 
 | Key | Action |
 |---|---|
 | `r` | Force refresh |
+| `d` | Toggle Model / Tool usage detail panels |
 | `q` / `Esc` | Quit |
+
+## Layout
+
+```
+┌── Claude Usage ────────┐  ┌── GLM Coding Plan ──────┐
+│  5h  ████░  45%       │  │  Per 5 min  Calls       │
+│  7d  ██░░░  20%       │  │  Monthly    Tokens       │
+└────────────────────────┘  └─────────────────────────┘
+# press [d] to show:
+┌── Model Usage ─────────┐  ┌── Tool Usage ───────────┐
+│  Total Calls  574      │  │  Network Search  0      │
+│  Total Tokens 27.7M    │  │  Web Read MCP    0      │
+└────────────────────────┘  └─────────────────────────┘
+```
 
 ## Project Structure
 
 ```
 src/
 ├── index.tsx              # Entry point
-├── api/zai.ts             # z.ai API client
+├── api/
+│   ├── zai.ts             # z.ai API client
+│   └── claude.ts          # Claude usage API client
 ├── types/index.ts         # TypeScript interfaces
 ├── utils/flatten.ts       # Data flattening utilities
 └── components/
     ├── App.tsx            # Root: state, polling, keyboard
-    ├── Header.tsx         # Title bar
-    ├── ModelUsage.tsx     # Model calls + token totals
-    ├── ToolUsage.tsx      # Tool call breakdowns
-    ├── QuotaLimit.tsx     # Quota limits with progress bars
+    ├── Header.tsx         # Title bar with keybinding hints
+    ├── ClaudeUsage.tsx    # Claude 5h/7d utilization
+    ├── QuotaLimit.tsx     # GLM Coding Plan quota
+    ├── ModelUsage.tsx     # Model calls + token totals (hidden by default)
+    ├── ToolUsage.tsx      # Tool call breakdowns (hidden by default)
     └── StatusBar.tsx      # Last updated / error status
 ```
 
@@ -54,9 +74,10 @@ src/
 
 | Panel | Endpoint |
 |---|---|
-| Model Usage | `GET /api/monitor/usage/model-usage?startTime=...&endTime=...` |
-| Tool Usage | `GET /api/monitor/usage/tool-usage?startTime=...&endTime=...` |
-| Quota / Limits | `GET /api/monitor/usage/quota/limit` |
+| GLM Coding Plan | `GET https://api.z.ai/api/monitor/usage/quota/limit` |
+| Model Usage | `GET https://api.z.ai/api/monitor/usage/model-usage?startTime=...&endTime=...` |
+| Tool Usage | `GET https://api.z.ai/api/monitor/usage/tool-usage?startTime=...&endTime=...` |
+| Claude Usage | `GET https://api.anthropic.com/api/oauth/usage` |
 
 > **Note:** `model-usage` and `tool-usage` require `startTime`/`endTime` in `yyyy-MM-dd HH:mm:ss` format.
 
@@ -67,6 +88,15 @@ src/
 ```bash
 docker run -it --rm \
   -e ZAI_API_KEY=your_api_key_here \
+  ghcr.io/huswim/glm-coding-plan-usage:main
+```
+
+With Claude usage monitoring:
+
+```bash
+docker run -it --rm \
+  -e ZAI_API_KEY=your_api_key_here \
+  -e CLAUDE_ACCESS_TOKEN=your_claude_token \
   ghcr.io/huswim/glm-coding-plan-usage:main
 ```
 
@@ -91,7 +121,7 @@ docker run -it --rm -e ZAI_API_KEY=your_api_key_here glm-coding-plan-usage
 
 ### CI/CD
 
-GitHub Actions automatically builds and publishes to `ghcr.io` on every push to `main` and on version tags (`v*`). See [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml).
+GitHub Actions automatically builds and publishes to `ghcr.io` on every push to `main` and on version tags (`v*`). Builds natively for both `linux/amd64` and `linux/arm64`. See [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml).
 
 **Image tags produced:**
 
