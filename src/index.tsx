@@ -14,7 +14,7 @@ if (!apiKey) {
 
 const config: AppConfig = {
   apiKey,
-  pollIntervalMs: parseInt(process.env['POLL_INTERVAL_MS'] ?? '30000', 10),
+  pollIntervalMs: parseInt(process.env['POLL_INTERVAL_MS'] ?? '300000', 10),
   daysBack: parseInt(process.env['DAYS_BACK'] ?? '7', 10),
 };
 

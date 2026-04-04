@@ -61,7 +61,7 @@ pnpm start      # node dist/index.js
 
 ```
 ZAI_API_KEY           # required
-POLL_INTERVAL_MS      # default 30000
+POLL_INTERVAL_MS      # default 300000 (5 minutes)
 DAYS_BACK             # default 7
 CLAUDE_ACCESS_TOKEN      # optional; macOS reads Keychain automatically if unset
 GITHUB_COPILOT_TOKEN     # optional; auto-detected from opencode auth.json or gh CLI

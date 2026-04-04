@@ -27,7 +27,7 @@ pnpm dev
 | Variable | Default | Description |
 |---|---|---|
 | `ZAI_API_KEY` | required | Your z.ai API key |
-| `POLL_INTERVAL_MS` | `30000` | Refresh interval in milliseconds |
+| `POLL_INTERVAL_MS` | `300000` | Refresh interval in milliseconds (default 5m) |
 | `DAYS_BACK` | `7` | Time window for usage queries (days) |
 | `CLAUDE_ACCESS_TOKEN` | — | Claude OAuth token (macOS: auto-read from Keychain if unset) |
 | `GITHUB_COPILOT_TOKEN` | — | GitHub token (auto-detected from opencode auth.json or `gh` CLI if unset) |
